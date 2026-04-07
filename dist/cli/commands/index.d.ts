@@ -1,0 +1,27 @@
+import type { SlashCommand } from '../../types.js';
+import help from './help.js';
+import model from './model.js';
+import provider from './provider.js';
+import key from './key.js';
+import config from './config.js';
+import system from './system.js';
+import clear from './clear.js';
+import reset from './reset.js';
+import history from './history.js';
+import load from './load.js';
+import save from './save.js';
+import export_ from './export.js';
+import copy from './copy.js';
+import tokens from './tokens.js';
+import stream from './stream.js';
+import multiline from './multiline.js';
+import pipe from './pipe.js';
+import run from './run.js';
+import whoami from './whoami.js';
+import exit from './exit.js';
+import attach from './attach.js';
+import diff from './diff.js';
+export { help, model, provider, key, config, system, clear, reset, history, load, save, export_, copy, tokens, stream, multiline, pipe, run, whoami, exit, attach, diff };
+export declare const allCommands: SlashCommand[];
+export declare const commandMap: Map<string, SlashCommand>;
+//# sourceMappingURL=index.d.ts.map

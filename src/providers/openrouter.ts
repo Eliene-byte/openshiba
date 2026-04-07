@@ -1,0 +1,221 @@
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// OpenShiba — OpenRouter Provider (OpenAI-compatible)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import OpenAI from 'openai';
+import type {
+  ProviderInstance,
+  ProviderConfig,
+  ProviderResponse,
+  Message,
+  ChatOptions,
+  StreamChunk,
+  ModelInfo,
+  TokenUsage,
+} from '../types.js';
+import { PROVIDER_DEFAULTS } from '../types.js';
+
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function extractTokenUsage(usage: OpenAI.CompletionUsage | null | undefined): TokenUsage | undefined {
+  if (!usage) return undefined;
+  return {
+    prompt_tokens: usage.prompt_tokens,
+    completion_tokens: usage.completion_tokens,
+    total_tokens: usage.total_tokens,
+  };
+}
+
+export class OpenRouterProvider implements ProviderInstance {
+  readonly name: string;
+  readonly config: ProviderConfig;
+  private client: OpenAI;
+
+  constructor(config?: Partial<ProviderConfig> & { apiKey?: string }) {
+    const defaults = PROVIDER_DEFAULTS.openrouter;
+    this.config = {
+      name: defaults.name,
+      baseUrl: config?.baseUrl ?? defaults.baseUrl,
+      apiKey: config?.apiKey ?? '',
+      models: defaults.models,
+      isLocal: defaults.isLocal,
+    };
+    this.name = this.config.name;
+    this.client = new OpenAI({
+      apiKey: this.config.apiKey,
+      baseURL: this.config.baseUrl,
+    });
+  }
+
+  // ── Validation ────────────────────────────────────
+
+  validateConfig(): boolean {
+    return this.config.apiKey.length > 0;
+  }
+
+  // ── Non-streaming chat ────────────────────────────
+
+  async chat(messages: Message[], options: ChatOptions): Promise<ProviderResponse> {
+    if (!this.validateConfig()) {
+      throw new Error('OpenRouter provider requires an API key. Set it via /key or the OPENROUTER_API_KEY env var.');
+    }
+
+    const systemPrompt = options.systemPrompt ?? '';
+    const apiMessages: OpenAI.ChatCompletionMessageParam[] = [];
+
+    if (systemPrompt) {
+      apiMessages.push({ role: 'system', content: systemPrompt });
+    }
+
+    for (const msg of messages) {
+      apiMessages.push({ role: msg.role, content: msg.content });
+    }
+
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const response = await this.client.chat.completions.create({
+          model: messages.length > 0 ? this._resolveModel() : this.config.models[0].id,
+          messages: apiMessages,
+          temperature: options.temperature ?? 0.7,
+          top_p: options.topP ?? 1.0,
+          max_tokens: options.maxTokens ?? 4096,
+          stream: false,
+        });
+
+        const choice = response.choices[0];
+        return {
+          content: choice?.message?.content ?? '',
+          tokens: extractTokenUsage(response.usage),
+          model: response.model,
+        };
+      } catch (err: unknown) {
+        lastError = err;
+        const status = (err as { status?: number }).status;
+
+        // Retry on rate-limit (429) or server errors (5xx)
+        if (status === 429 || (status !== undefined && status >= 500)) {
+          if (attempt < MAX_RETRIES - 1) {
+            const wait = BASE_DELAY_MS * Math.pow(2, attempt);
+            await delay(wait);
+            continue;
+          }
+        }
+
+        // Non-retryable error – throw immediately
+        throw new Error(
+          `OpenRouter API error: ${(err as Error).message ?? String(err)}`,
+        );
+      }
+    }
+
+    throw new Error(
+      `OpenRouter request failed after ${MAX_RETRIES} retries: ${(lastError as Error).message ?? String(lastError)}`,
+    );
+  }
+
+  // ── Streaming chat ────────────────────────────────
+
+  async *stream(messages: Message[], options: ChatOptions): AsyncIterable<StreamChunk> {
+    if (!this.validateConfig()) {
+      throw new Error('OpenRouter provider requires an API key. Set it via /key or the OPENROUTER_API_KEY env var.');
+    }
+
+    const systemPrompt = options.systemPrompt ?? '';
+    const apiMessages: OpenAI.ChatCompletionMessageParam[] = [];
+
+    if (systemPrompt) {
+      apiMessages.push({ role: 'system', content: systemPrompt });
+    }
+
+    for (const msg of messages) {
+      apiMessages.push({ role: msg.role, content: msg.content });
+    }
+
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const stream = await this.client.chat.completions.create({
+          model: this._resolveModel(),
+          messages: apiMessages,
+          temperature: options.temperature ?? 0.7,
+          top_p: options.topP ?? 1.0,
+          max_tokens: options.maxTokens ?? 4096,
+          stream: true,
+        });
+
+        let model = '';
+        let usage: TokenUsage | undefined;
+
+        for await (const chunk of stream) {
+          model = chunk.model;
+          usage = extractTokenUsage(chunk.usage);
+
+          const delta = chunk.choices[0]?.delta?.content;
+          if (delta) {
+            yield { content: delta, done: false, tokens: usage };
+          }
+
+          if (chunk.choices[0]?.finish_reason === 'stop') {
+            yield { content: '', done: true, tokens: usage };
+          }
+        }
+
+        return; // success
+      } catch (err: unknown) {
+        lastError = err;
+        const status = (err as { status?: number }).status;
+
+        if (status === 429 || (status !== undefined && status >= 500)) {
+          if (attempt < MAX_RETRIES - 1) {
+            const wait = BASE_DELAY_MS * Math.pow(2, attempt);
+            await delay(wait);
+            continue;
+          }
+        }
+
+        throw new Error(
+          `OpenRouter stream error: ${(err as Error).message ?? String(err)}`,
+        );
+      }
+    }
+
+    throw new Error(
+      `OpenRouter stream failed after ${MAX_RETRIES} retries: ${(lastError as Error).message ?? String(lastError)}`,
+    );
+  }
+
+  // ── Models ────────────────────────────────────────
+
+  async listModels(): Promise<ModelInfo[]> {
+    return this.config.models;
+  }
+
+  // ── Connection test ───────────────────────────────
+
+  async testConnection(): Promise<boolean> {
+    if (!this.validateConfig()) return false;
+
+    try {
+      await this.client.models.list();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────
+
+  /** Pick the first model by default.  In practice the model is chosen by the
+   *  caller and embedded in the message history / conversation metadata. */
+  private _resolveModel(): string {
+    return this.config.models[0]?.id ?? 'anthropic/claude-sonnet-4';
+  }
+}
