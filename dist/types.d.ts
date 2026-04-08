@@ -32,6 +32,7 @@ export interface ModelInfo {
     name: string;
     maxTokens: number;
     contextWindow: number;
+    size?: string;
 }
 export interface SessionConfig {
     provider: string;
@@ -42,6 +43,7 @@ export interface SessionConfig {
     systemPrompt: string;
     streaming: boolean;
     profile: string;
+    memoryEnabled: boolean;
 }
 export interface StreamChunk {
     content: string;
@@ -75,6 +77,7 @@ export interface CommandContext {
     conversation: Conversation;
     provider: ProviderInstance;
     history: HistoryStore;
+    memory: MemoryStore;
     configStore: ConfigStore;
     appendMessage: (role: 'user' | 'assistant', content: string) => void;
     setConfig: (partial: Partial<SessionConfig>) => void;
@@ -98,6 +101,7 @@ export interface ProviderInstance {
     validateConfig(): boolean;
 }
 export interface ChatOptions {
+    model?: string;
     temperature?: number;
     topP?: number;
     maxTokens?: number;
@@ -112,6 +116,24 @@ export interface ConfigStore {
     setProviderConfig(name: string, config: ProviderConfig): void;
     getSessionConfig(profile?: string): SessionConfig;
     setSessionConfig(config: SessionConfig): void;
+}
+export interface MemoryEntry {
+    id: number;
+    content: string;
+    category: 'fact' | 'preference' | 'context' | 'instruction';
+    createdAt: number;
+    updatedAt: number;
+}
+export interface MemoryStore {
+    add(content: string, category?: string): number;
+    get(id: number): MemoryEntry | null;
+    getAll(limit?: number): MemoryEntry[];
+    search(query: string): MemoryEntry[];
+    delete(id: number): boolean;
+    clear(): boolean;
+    getCount(): number;
+    formatForPrompt(limit?: number): string;
+    close(): void;
 }
 export interface HistoryStore {
     saveConversation(conversation: Conversation): string;

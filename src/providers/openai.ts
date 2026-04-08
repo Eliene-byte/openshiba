@@ -81,7 +81,7 @@ export class OpenAIProvider implements ProviderInstance {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         const response = await this.client.chat.completions.create({
-          model: this._resolveModel(),
+          model: options.model ?? this._resolveModel(),
           messages: apiMessages,
           temperature: options.temperature ?? 0.7,
           top_p: options.topP ?? 1.0,
@@ -141,7 +141,7 @@ export class OpenAIProvider implements ProviderInstance {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         const stream = await this.client.chat.completions.create({
-          model: this._resolveModel(),
+          model: options.model ?? this._resolveModel(),
           messages: apiMessages,
           temperature: options.temperature ?? 0.7,
           top_p: options.topP ?? 1.0,
@@ -191,7 +191,18 @@ export class OpenAIProvider implements ProviderInstance {
   // ── Models ────────────────────────────────────────
 
   async listModels(): Promise<ModelInfo[]> {
-    return this.config.models;
+    try {
+      const response = await this.client.models.list();
+      const models: ModelInfo[] = response.data.map((m) => ({
+        id: m.id,
+        name: m.id,
+        maxTokens: 4096,
+        contextWindow: 8192,
+      }));
+      return models.length > 0 ? models : this.config.models;
+    } catch {
+      return this.config.models;
+    }
   }
 
   // ── Connection test ───────────────────────────────

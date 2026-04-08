@@ -62,7 +62,7 @@ export class OllamaProvider implements ProviderInstance {
 
     try {
       const response = await this.client.chat({
-        model: this._resolveModel(),
+        model: options.model ?? this.config.models[0]?.id ?? 'llama3.3',
         messages: ollamaMessages,
         options: {
           temperature: options.temperature ?? 0.7,
@@ -99,7 +99,7 @@ export class OllamaProvider implements ProviderInstance {
 
     try {
       const stream = await this.client.chat({
-        model: this._resolveModel(),
+        model: options.model ?? this.config.models[0]?.id ?? 'llama3.3',
         messages: ollamaMessages,
         options: {
           temperature: options.temperature ?? 0.7,
@@ -143,6 +143,8 @@ export class OllamaProvider implements ProviderInstance {
 
   // ── Models ────────────────────────────────────────
   // Dynamically fetch installed models from the Ollama instance.
+  // Returns ONLY models that are actually downloaded locally.
+  // Returns empty array if Ollama is not running — no fallback.
 
   async listModels(): Promise<ModelInfo[]> {
     try {
@@ -152,10 +154,11 @@ export class OllamaProvider implements ProviderInstance {
         name: m.name,
         maxTokens: 4096,
         contextWindow: 8192,
+        size: m.size ? formatBytes(m.size) : undefined,
       }));
     } catch {
-      // Fall back to the static defaults if Ollama is unreachable
-      return this.config.models;
+      // Ollama is not running or not installed — return empty, no fake models
+      return [];
     }
   }
 
@@ -170,9 +173,32 @@ export class OllamaProvider implements ProviderInstance {
     }
   }
 
+  // ── Check if Ollama binary exists on PATH ─────────
+
+  isInstalled(): boolean {
+    try {
+      const { execSync } = require('node:child_process') as typeof import('node:child_process');
+      const isWin = process.platform === 'win32';
+      const cmd = isWin ? 'where ollama' : 'which ollama';
+      execSync(cmd, { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // ── Helpers ───────────────────────────────────────
 
-  private _resolveModel(): string {
+  private _getDefaultModel(): string {
     return this.config.models[0]?.id ?? 'llama3.3';
   }
+}
+
+// ── Utility ─────────────────────────────────────────
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`;
+  if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(1)} MB`;
+  if (bytes >= 1e3) return `${(bytes / 1e3).toFixed(1)} KB`;
+  return `${bytes} B`;
 }

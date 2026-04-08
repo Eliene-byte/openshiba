@@ -21,6 +21,7 @@ import { DEFAULT_SESSION_CONFIG, PROVIDER_DEFAULTS } from '../types.js';
 import { createProvider } from '../providers/base.js';
 import { configStore } from '../storage/config.js';
 import { historyStore } from '../storage/history.js';
+import { memoryStore } from '../storage/memory.js';
 import { allCommands, commandMap } from './commands/index.js';
 import { Header } from '../ui/header.js';
 import { MessageItem } from '../ui/message.js';
@@ -53,7 +54,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
   // ─── State ───
   const [sessionConfig, setSessionConfigState] = useState<SessionConfig>(() => {
     const saved = configStore.getSessionConfig(profile);
-    return { ...DEFAULT_SESSION_CONFIG, ...saved, profile: profile ?? saved.profile ?? 'default' };
+    return { ...DEFAULT_SESSION_CONFIG, ...saved, profile: profile ?? saved.profile ?? 'default', memoryEnabled: saved.memoryEnabled ?? true };
   });
 
   const [conversation, setConversation] = useState<Conversation>(() => ({
@@ -79,6 +80,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
   const [multilineBuffer, setMultilineBuffer] = useState('');
   const [showMascot, setShowMascot] = useState(false);
   const [outputLines, setOutputLines] = useState<Array<{ text: string; color?: string }>>([]);
+  const [memoryCount, setMemoryCount] = useState(0);
 
   // Ref to track the latest conversation for async callbacks
   const conversationRef = useRef(conversation);
@@ -113,12 +115,33 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
     initProvider();
   }, [sessionConfig.provider]);
 
+  // ─── Load memory count on init ───
+  useEffect(() => {
+    setMemoryCount(memoryStore.getCount());
+  }, []);
+
   // ─── Process pipe input ───
   useEffect(() => {
     if (pipeMode && initialInput) {
       processUserInput(initialInput);
     }
   }, [pipeMode]);
+
+  // ─── Build effective system prompt (with memories) ───
+  const getEffectiveSystemPrompt = useCallback((): string => {
+    const base = sessionConfig.systemPrompt;
+
+    if (!sessionConfig.memoryEnabled) {
+      return base;
+    }
+
+    const memoryText = memoryStore.formatForPrompt(50);
+    if (!memoryText) {
+      return base;
+    }
+
+    return `${memoryText}\n\n${base}`;
+  }, [sessionConfig.systemPrompt, sessionConfig.memoryEnabled]);
 
   // ─── Command Context ───
   const getCommandContext = useCallback((): CommandContext => {
@@ -127,6 +150,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
       conversation: conversationRef.current,
       provider: provider!,
       history: historyStore,
+      memory: memoryStore,
       configStore,
       appendMessage: (role, content) => {
         const msg: Message = {
@@ -180,6 +204,11 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
 
       const ctx = getCommandContext();
       await command.handler(args, ctx);
+
+      // Refresh memory count after memory commands
+      if (cmdName === 'memory') {
+        setMemoryCount(memoryStore.getCount());
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       addOutput(chalk.hex('#ff4444')(`Error: ${msg}`));
@@ -210,11 +239,13 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
     setError(null);
 
     try {
-      // Build messages array with system prompt
+      // Build messages array with system prompt + memories
+      const effectiveSystemPrompt = getEffectiveSystemPrompt();
+
       const systemMsg: Message = {
         id: crypto.randomUUID(),
         role: 'system',
-        content: sessionConfig.systemPrompt,
+        content: effectiveSystemPrompt,
         timestamp: Date.now(),
       };
 
@@ -226,10 +257,11 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
         let fullContent = '';
 
         const stream = provider.stream(allMessages, {
+          model: sessionConfig.model,
           temperature: sessionConfig.temperature,
           topP: sessionConfig.topP,
           maxTokens: sessionConfig.maxTokens,
-          systemPrompt: sessionConfig.systemPrompt,
+          systemPrompt: effectiveSystemPrompt,
         });
 
         for await (const chunk of stream) {
@@ -261,10 +293,11 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
       } else {
         // ── Non-Streaming Mode ──
         const response = await provider.chat(allMessages, {
+          model: sessionConfig.model,
           temperature: sessionConfig.temperature,
           topP: sessionConfig.topP,
           maxTokens: sessionConfig.maxTokens,
-          systemPrompt: sessionConfig.systemPrompt,
+          systemPrompt: effectiveSystemPrompt,
         });
 
         const assistantMessage: Message = {
@@ -293,7 +326,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
       setIsLoading(false);
       setIsStreaming(false);
     }
-  }, [provider, sessionConfig, tokenUsage, addOutput]);
+  }, [provider, sessionConfig, tokenUsage, addOutput, getEffectiveSystemPrompt]);
 
   // ─── Submit Input ───
   const submitInput = useCallback(() => {
@@ -371,6 +404,13 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }: ReplProps):
 
       {/* Shiba Mascot */}
       {showMascot && <ShibaMascot show={showMascot} />}
+
+      {/* Memory indicator */}
+      {sessionConfig.memoryEnabled && memoryCount > 0 && (
+        <Text dimColor>
+          {chalk.dim(`  🧠 ${memoryCount} memories loaded`)}
+        </Text>
+      )}
 
       {/* Output lines (from commands) */}
       {outputLines.map((line, i) => (

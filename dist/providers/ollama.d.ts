@@ -11,6 +11,7 @@ export declare class OllamaProvider implements ProviderInstance {
     stream(messages: Message[], options: ChatOptions): AsyncIterable<StreamChunk>;
     listModels(): Promise<ModelInfo[]>;
     testConnection(): Promise<boolean>;
-    private _resolveModel;
+    isInstalled(): boolean;
+    private _getDefaultModel;
 }
 //# sourceMappingURL=ollama.d.ts.map

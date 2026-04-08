@@ -1,67 +1,58 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Ink-5.1-FF6B6B?style=flat-square&logoColor=white" alt="Ink" />
-  <img src="https://img.shields.io/badge/License-MIT-e8873a?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-444444?style=flat-square" alt="Version" />
-</p>
-
-<h1 align="center">🐕 OpenShiba</h1>
+# 🐕 OpenShiba
 
 <p align="center">
-  <strong>CLI interativa sênior para conversar com modelos de IA — open-source, local-first</strong><br/>
-  Interface de terminal bonita com streaming em tempo real, 7 providers, 22 comandos slash e mascote Shiba Inu.
+  <img src="https://img.shields.io/badge/Node.js-%3E%3D18.0.0-339933?style=flat-square&logo=node.js" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=flat-square&logo=typescript" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Ink-5.x-FF6B00?style=flat-square&logo=react" alt="Ink"/>
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"/>
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=flat-square" alt="Platform"/>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Providers-7-e8873a?style=for-the-badge" alt="Providers" />
-  <img src="https://img.shields.io/badge/Commands-22-e8873a?style=for-the-badge" alt="Commands" />
-  <img src="https://img.shields.io/badge/Platforms-Windows%20%7C%20macOS%20%7C%20Linux-e8873a?style=for-the-badge" alt="Platforms" />
-</p>
-
----
-
-## ✨ Preview
+**OpenShiba** é um CLI interativo no terminal para conversar com modelos de IA. Suporta múltiplos providers (OpenRouter, OpenAI, Anthropic, Groq, Ollama, LM Studio e custom), streaming em tempo real, syntax highlighting, histórico de conversas, e muito mais — tudo direto no seu terminal.
 
 ```
-╔══════════════════════════════════════════╗
-  ║        🐕 OpenShiba v1.0.0              ║
-  ║  The Open-Source AI Terminal Companion ║
-  ╚══════════════════════════════════════════╝
-
-    ___  ____  _____ _   _ ____  _   _ ___ ____    _
-   / _ \|  _ \| ____| \ | / ___|| | | |_ _| __ )  / \
-  | | | | |_) |  _| |  \| \___ \| |_| || ||  _ \ / _ \
-  | |_| |  __/| |___| |\  |___) |  _  || || |_) / ___ \
-   \___/|_|   |_____|_| \_|____/|_| |_|___|____/_/   \_\
-
- ┌─ Status ────────────────────────────────────────┐
- ├─ Provider  ── OpenRouter
- ├─ Model     ── Simulation
- ├─ Endpoint  ── https://openrouter.ai/api/v1
- └─ Profile   ── default
- └─ Status     ── ● Connected
-
-[You] Explique computação quântica em 3 linhas
-[AI] Computação quântica usa qubits que podem
-     estar em superposição (0 e 1 ao mesmo tempo),
-     permitindo processamento paralelo exponencial...
-     tokens: 847 (prompt: 24, completion: 823)
-
-> █
-────────────────────────────────────────────────
-Tokens: 1.2k / 200k (1%)                     ● Connected
-openshiba v1.0.0
+  ╔════════════════════════════════════════════════════════╗
+  ║  ███████╗ ██████╗ ██████╗ ████████╗    ██████╗ ██████╗ ║
+  ║  ██╔════╝██╔═══██╗██╔══██╗╚══██╔══╝    ██╔══██╗██╔══██╗║
+  ║  ███████╗██║   ██║██████╔╝   ██║       ██████╔╝██████╔╝║
+  ║  ╚════██║██║   ██║██╔══██╗   ██║       ██╔══██╗██╔═══╝ ║
+  ║  ███████║╚██████╔╝██║  ██║   ██║       ██║  ██║██║     ║
+  ║  ╚══════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═╝     ║
+  ║  ███╗   ██╗███████╗████████╗ █████╗ ██╗███╗   ███╗     ║
+  ║  ████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║████╗ ████║     ║
+  ║  ██╔██╗ ██║█████╗     ██║   ███████║██║██╔████╔██║     ║
+  ║  ██║╚██╗██║██╔══╝     ██║   ██╔══██║██║██║╚██╔╝██║     ║
+  ║  ██║ ╚████║███████╗   ██║   ██║  ██║██║██║ ╚═╝ ██║     ║
+  ║  ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝     ║
+  ╚════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## 🚀 Instalação Rápida
+## ✨ Features
+
+- 🔄 **7 Providers**: OpenRouter, OpenAI, Anthropic, Groq, Ollama, LM Studio, Custom
+- 📡 **Streaming em tempo real**: respostas com fluxo contínuo
+- 🎨 **Syntax highlighting**: código colorido no terminal
+- 📋 **Histórico persistente**: salva conversas com busca
+- 🤖 **Listagem de modelos**: `/models` busca modelos em tempo real do provider
+- 📦 **Ollama integrado**: mostra modelos baixados e disponíveis para download
+- 🔧 **RAG básico**: anexe arquivos como contexto (`/attach`)
+- 📊 **Token tracking**: contagem de tokens em tempo real
+- 🎭 **ASCII Shiba Inu**: mascote interativo
+- ⌨️ **Multiline mode**: mensagens com múltiplas linhas
+- 🔁 **Retry com backoff**: 3 tentativas com espera exponencial
+- 💾 **Perfis**: múltiplos perfis de configuração
+- 📤 **Export**: exporte conversas em Markdown ou JSON
+
+---
+
+## 📦 Instalação
 
 ### Pré-requisitos
 
-- **Node.js 18+** — [baixe aqui](https://nodejs.org)
-- npm (já vem com o Node.js)
+- **Node.js** 18 ou superior
+- **Ollama** (opcional, para modelos locais) — [baixe aqui](https://ollama.com)
 
 ### Instalar
 
@@ -76,246 +67,261 @@ npm install
 # Compile o TypeScript
 npm run build
 
-# Instale globalmente (opcional)
-npm install -g .
+# Rode o OpenShiba
+npx openshiba
+```
 
-# Rode!
+### Instalar globalmente (opcional)
+
+```bash
+npm install -g .
 openshiba
 ```
 
-### Sem instalar globalmente
+> **Windows**: se `openshiba` não for reconhecido, use `npx openshiba`.
+
+---
+
+## 🚀 Uso Rápido
+
+### Iniciar
 
 ```bash
 npx openshiba
-# ou
-node dist/cli/index.js
 ```
+
+### Configurar provider
+
+```bash
+# Para Ollama (local) — já vem configurado por padrão
+/provider ollama
+
+# Para OpenRouter
+/provider openrouter
+/key sk-or-v1-xxxxxxxxxxxx
+
+# Para OpenAI
+/provider openai
+/key sk-xxxxxxxxxxxx
+
+# Para Anthropic
+/provider anthropic
+/key sk-ant-xxxxxxxxxxxx
+
+# Para Groq
+/provider groq
+/key gsk_xxxxxxxxxxxx
+```
+
+### Selecionar modelo
+
+```bash
+# Lista modelos disponíveis do provider (busca em tempo real)
+/models
+
+# Mostra modelos baixados + populares para download (Ollama)
+/models
+
+# Seleciona modelo pelo número
+/models 3
+
+# Ou diretamente pelo nome
+/model qwen2.5
+/model gpt-4o
+/model anthropic/claude-sonnet-4
+```
+
+### Chat
+
+```
+> Olá, como você está?
+> Me ajude a escrever uma função em Python
+> /clear
+```
+
+---
+
+## 📋 Comandos
+
+| Comando | Descrição | Exemplo |
+|---|---|---|
+| `/help` | Lista todos os comandos | `/help` |
+| `/models` | Lista modelos do provider (tempo real) | `/models` |
+| `/models 3` | Seleciona modelo pelo número | `/models 3` |
+| `/model` | Troca modelo pelo nome ou número | `/model qwen2.5` |
+| `/list` | Lista modelos disponíveis (live) | `/list` |
+| `/provider` | Lista ou troca provider | `/provider openrouter` |
+| `/key` | Mostra ou define API key | `/key sk-xxx` |
+| `/config` | Mostra ou altera configuração | `/config temperature=0.9` |
+| `/system` | Mostra ou define system prompt | `/system Você é um expert` |
+| `/clear` | Limpa mensagens da conversa | `/clear` |
+| `/reset` | Reseta tudo para o padrão | `/reset` |
+| `/history` | Navega no histórico | `/history list` |
+| `/load` | Carrega conversa salva | `/load <id>` |
+| `/save` | Salva conversa atual | `/save nome` |
+| `/export` | Exporta conversa para arquivo | `/export md` |
+| `/copy` | Copia última resposta | `/copy` |
+| `/tokens` | Mostra uso de tokens | `/tokens` |
+| `/stream` | Liga/desliga streaming | `/stream` |
+| `/multiline` | Instruções multiline | `/multiline` |
+| `/pipe` | Instruções pipe mode | `/pipe` |
+| `/run` | Executa arquivo .shibaprompt | `/run file.shiba` |
+| `/whoami` | Mostra info da sessão | `/whoami` |
+| `/attach` | Anexa arquivo como contexto | `/attach code.py` |
+| `/diff` | Compara duas respostas | `/diff` |
+| `/exit` | Sai do OpenShiba | `/exit` |
 
 ---
 
 ## 🤖 Providers Suportados
 
-| Provider | Endpoint | API Key | Local |
-|----------|----------|---------|-------|
-| **OpenRouter** | `https://openrouter.ai/api/v1` | ✅ Necessária | ❌ |
-| **OpenAI** | `https://api.openai.com/v1` | ✅ Necessária | ❌ |
-| **Anthropic** | SDK nativo | ✅ Necessária | ❌ |
-| **Groq** | `https://api.groq.com/openai/v1` | ✅ Necessária | ❌ |
-| **Ollama** | `http://localhost:11434` | ❌ Não precisa | ✅ |
-| **LM Studio** | `http://localhost:1234/v1` | ❌ Não precisa | ✅ |
-| **Custom** | Configurável | Opcional | Opcional |
+### Ollama (Local)
 
-### Configurar Provider
+Rode modelos localmente sem internet. O comando `/models` mostra:
+- ✅ **Modelos baixados**: prontos para usar com tamanho do arquivo
+- 📦 **Para baixar**: modelos populares com o comando `ollama pull`
 
+```bash
+# Baixe modelos com Ollama
+ollama pull llama3.3
+ollama pull qwen2.5
+ollama pull mistral
+
+# Depois selecione no OpenShiba
+/models
+/model qwen2.5
 ```
+
+### OpenRouter
+
+Acesse centenas de modelos via uma API:
+```bash
 /provider openrouter
-/key sk-or-v1-sua-api-key-aqui
-/model openai/gpt-4o-mini
+/key sk-or-v1-sua-key
+/models
 ```
 
-### Usar Ollama (local, grátis)
-
-1. Instale o [Ollama](https://ollama.com)
-2. Baixe um modelo: `ollama pull llama3.3`
-3. Deixe o Ollama rodando e abra o OpenShiba
-
-```
-/provider ollama
-/model llama3.3
-```
-
----
-
-## 📋 Comandos Slash
-
-| Comando | Descrição |
-|---------|-----------|
-| `/help` | Lista todos os comandos |
-| `/provider` | Troca o provider ativo |
-| `/model` | Troca o modelo ativo |
-| `/key` | Define ou atualiza a API key |
-| `/config` | Edita configurações (temp, top_p, max_tokens) |
-| `/system` | Define o system prompt da sessão |
-| `/clear` | Limpa o histórico da conversa |
-| `/reset` | Reinicia tudo (provider, model, histórico) |
-| `/history` | Lista conversas salvas |
-| `/load` | Carrega uma conversa anterior |
-| `/save` | Salva a conversa com nome customizado |
-| `/export` | Exporta conversa como `.md` ou `.json` |
-| `/copy` | Copia a última resposta para o clipboard |
-| `/tokens` | Mostra uso de tokens da sessão |
-| `/stream` | Toggle de streaming on/off |
-| `/multiline` | Modo de input multilinha |
-| `/attach` | Anexa arquivo ao contexto (RAG simples) |
-| `/diff` | Compara duas respostas lado a lado |
-| `/run` | Executa um arquivo `.shibaprompt` |
-| `/whoami` | Exibe o Shiba + info do provider |
-| `/pipe` | Lê stdin como contexto |
-| `/exit` | Encerra o OpenShiba |
-
----
-
-## ⚡ Funcionalidades
-
-### Streaming em Tempo Real
-Tokens aparecem conforme chegam, com cursor piscante e diff highlight para código gerado.
-
-### Syntax Highlight no Terminal
-Blocos de código com 50+ linguagens suportadas, renderizados com cores no terminal.
-
-### Histórico Persistente
-Conversas salvas em `~/.openshiba/history/` com busca full-text:
-
-```
-/history search "quantum"
-```
-
-### Pipe Mode
-Integração com scripts shell:
+### OpenAI
 
 ```bash
-echo "Resuma este texto" | openshiba
-cat arquivo.txt | openshiba
+/provider openai
+/key sk-sua-key
+/models
 ```
 
-### Profiles
-Múltiplos perfis de configuração:
+### Anthropic
 
 ```bash
-openshiba --profile trabalho
-openshiba --profile pessoal
+/provider anthropic
+/key sk-ant-sua-key
+/models
 ```
 
-### .shibaprompt Files
-Arquivos de prompt reutilizáveis com variáveis:
+### Groq
 
-```markdown
-Revise o seguinte código:
-{{file}}
-Data: {{date}}
-```
-
+Ultra-rápido com modelos open-source:
 ```bash
-/run meu-prompt.shibaprompt
+/provider groq
+/key gsk_sua-key
+/models
 ```
 
-### Token Budget
-Alerta visual quando a conversa se aproxima do limite de contexto (verde → amarelo → vermelho).
+### LM Studio / Custom
 
-### RAG Simples
-Anexe arquivos ao contexto:
-
+Qualquer endpoint compatível com OpenAI:
+```bash
+/provider lmstudio
+# ou
+/provider custom
 ```
-/attach path/to/documento.txt
-```
-
-### Retry Inteligente
-Reenvio automático com backoff exponencial em caso de rate limit ou timeout.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## ⚙️ Flags da CLI
 
-| Tecnologia | Uso |
-|------------|-----|
-| **Node.js + TypeScript** | Runtime e linguagem principal |
-| **Ink (React para Terminal)** | Renderização TUI |
-| **OpenAI SDK** | Providers OpenAI-compatíveis |
-| **@anthropic-ai/sdk** | Provider Anthropic nativo |
-| **Groq SDK** | Inferência ultrarrápida |
-| **Ollama SDK** | Modelos locais |
-| **sql.js** | Banco SQLite (puro JS, sem compilação) |
-| **figlet + chalk** | ASCII art e cores |
-| **marked** | Renderização markdown |
-| **Commander.js** | Parser de argumentos CLI |
-| **clipboardy** | Integração com clipboard |
+```bash
+openshiba                    # Inicia com perfil padrão
+openshiba --profile dev      # Inicia com perfil "dev"
+openshiba --provider groq    # Inicia com provider Groq
+openshiba --model llama3.3   # Inicia com modelo específico
+openshiba --debug            # Modo debug
+openshiba --run file.shiba   # Executa um arquivo .shibaprompt
+echo "pergunta" | openshiba --pipe  # Pipe mode
+```
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Estrutura
 
 ```
 openshiba/
 ├── src/
 │   ├── cli/
-│   │   ├── index.ts              ← Entry point (arg parser)
-│   │   ├── repl.tsx              ← REPL interativo com Ink
-│   │   └── commands/             ← 22 comandos slash
-│   │       ├── index.ts
-│   │       ├── help.ts, model.ts, provider.ts
-│   │       ├── save.ts, load.ts, export.ts
-│   │       └── ...
+│   │   ├── index.ts              # Entry point (Commander.js)
+│   │   ├── repl.tsx              # REPL principal (Ink + React)
+│   │   └── commands/
+│   │       ├── index.ts           # Registro de comandos
+│   │       ├── models.ts          # /models (busca live)
+│   │       ├── model.ts           # /model (troca rápida)
+│   │       ├── list.ts            # /list
+│   │       ├── provider.ts        # /provider
+│   │       ├── key.ts             # /key
+│   │       ├── config.ts          # /config
+│   │       ├── system.ts          # /system
+│   │       ├── help.ts            # /help
+│   │       ├── ... (mais 15 comandos)
 │   ├── providers/
-│   │   ├── base.ts               ← Factory createProvider()
-│   │   ├── openrouter.ts
-│   │   ├── anthropic.ts
-│   │   ├── groq.ts
-│   │   ├── ollama.ts
-│   │   ├── openai.ts
-│   │   └── custom.ts
+│   │   ├── base.ts               # Factory de providers
+│   │   ├── ollama.ts             # Ollama (local)
+│   │   ├── openrouter.ts         # OpenRouter
+│   │   ├── openai.ts             # OpenAI
+│   │   ├── anthropropic.ts       # Anthropic
+│   │   ├── groq.ts               # Groq
+│   │   ├── custom.ts             # Custom (qualquer OpenAI-compatível)
 │   ├── ui/
-│   │   ├── header.tsx            ← ASCII art + infobox
-│   │   ├── message.tsx           ← Bolhas de mensagem
-│   │   ├── statusbar.tsx         ← Rodapé com tokens/status
-│   │   ├── spinner.tsx           ← Spinner animado
-│   │   └── shiba.tsx             ← Mascote Shiba Inu
+│   │   ├── header.tsx             # ASCII art + info
+│   │   ├── message.tsx            # Mensagens com markdown
+│   │   ├── statusbar.tsx          # Barra de status
+│   │   ├── spinner.tsx            # Spinner animado
+│   │   └── shiba.tsx              # Mascote ASCII
 │   ├── storage/
-│   │   ├── config.ts             ← ConfigStore (conf)
-│   │   └── history.ts            ← HistoryStore (sql.js)
-│   └── utils/
-│       ├── tokenizer.ts          ← Estimativa de tokens
-│       ├── markdown.ts           ← Render markdown → ANSI
-│       └── rag.ts                ← Chunking + attach
+│   │   ├── config.ts              # Config persistente (conf)
+│   │   └── history.ts             # Histórico (sql.js)
+│   ├── utils/
+│   │   ├── tokenizer.ts           # Estimativa de tokens
+│   │   ├── markdown.ts            # Render markdown → ANSI
+│   │   └── rag.ts                 # Chunking para /attach
+│   └── types.ts                   # Tipos e configs padrão
 ├── package.json
-├── tsconfig.json
-└── README.md
+└── tsconfig.json
 ```
 
 ---
 
-## 🖥️ Compatibilidade
+## 🛠️ Tecnologias
 
-| Plataforma | Status |
-|------------|--------|
-| Windows 10/11 | ✅ |
-| macOS (Intel/Apple Silicon) | ✅ |
-| Linux (Ubuntu, Debian, Arch...) | ✅ |
-| WSL (Windows Subsystem for Linux) | ✅ |
-
----
-
-## 🎯 Flags da CLI
-
-```bash
-openshiba                              # Abre com perfil default
-openshiba --profile trabalho            # Perfil específico
-openshiba --provider openai             # Provider direto
-openshiba --model gpt-4o               # Modelo direto
-openshiba --debug                      # Ativa debug log
-openshiba --run prompt.shibaprompt     # Executa arquivo de prompt
-echo "Oi" | openshiba --pipe           # Modo pipe
-```
+| Tecnologia | Uso |
+|---|---|
+| [Ink](https://github.com/vadimdemedes/ink) v5 | React para terminal |
+| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática |
+| [chalk](https://github.com/chalk/chalk) v5 | Cores no terminal |
+| [figlet](https://github.com/patorjk/figlet) | ASCII art |
+| [sql.js](https://github.com/sql-js/sql.js) | SQLite (pure JS, sem C++) |
+| [openai](https://github.com/openai/openai-node) | SDK OpenAI/compatíveis |
+| [@anthropic-ai/sdk](https://github.com/anthropics/anthropic-sdk-typescript) | SDK Anthropic |
+| [ollama](https://github.com/ollama/ollama-js) | SDK Ollama |
+| [marked-terminal](https://github.com/markedjs/marked-terminal) | Markdown no terminal |
+| [highlight.js](https://highlightjs.org/) | Syntax highlighting |
+| [clipboardy](https://github.com/sindresorhus/clipboardy) | Copiar para clipboard |
 
 ---
 
-## 🐕 Sobre o Projeto
+## 📜 Licença
 
-OpenShiba é um projeto open-source inspirado no [OpenClaude](https://github.com/ryouha/claude-code-term), construído do zero com TypeScript, Ink e React para terminal. O nome vem da raça Shiba Inu — leal, ágil e determinado.
-
-### Diferenciais
-
-- **100% open-source** — sem dependências proprietárias
-- **Local-first** — funciona offline com Ollama
-- **Multi-provider** — 7 providers em uma interface única
-- **Zero compilação C++** — sql.js puro JavaScript (funciona em qualquer OS sem Visual Studio)
-- **TypeScript strict** — código tipado, seguro e manutenível
+MIT
 
 ---
 
-## 📄 Licença
-
-MIT — use, modifique e distribua livremente.
-
----
-
+<p align="center">
+  Feito com 🐕 por <a href="https://github.com/Eliene-byte">Eliene-byte</a>
 </p>

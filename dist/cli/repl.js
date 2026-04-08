@@ -11,6 +11,7 @@ import { DEFAULT_SESSION_CONFIG, PROVIDER_DEFAULTS } from '../types.js';
 import { createProvider } from '../providers/base.js';
 import { configStore } from '../storage/config.js';
 import { historyStore } from '../storage/history.js';
+import { memoryStore } from '../storage/memory.js';
 import { commandMap } from './commands/index.js';
 import { Header } from '../ui/header.js';
 import { MessageItem } from '../ui/message.js';
@@ -27,7 +28,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
     // ─── State ───
     const [sessionConfig, setSessionConfigState] = useState(() => {
         const saved = configStore.getSessionConfig(profile);
-        return { ...DEFAULT_SESSION_CONFIG, ...saved, profile: profile ?? saved.profile ?? 'default' };
+        return { ...DEFAULT_SESSION_CONFIG, ...saved, profile: profile ?? saved.profile ?? 'default', memoryEnabled: saved.memoryEnabled ?? true };
     });
     const [conversation, setConversation] = useState(() => ({
         id: crypto.randomUUID(),
@@ -51,6 +52,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
     const [multilineBuffer, setMultilineBuffer] = useState('');
     const [showMascot, setShowMascot] = useState(false);
     const [outputLines, setOutputLines] = useState([]);
+    const [memoryCount, setMemoryCount] = useState(0);
     // Ref to track the latest conversation for async callbacks
     const conversationRef = useRef(conversation);
     conversationRef.current = conversation;
@@ -79,12 +81,28 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
         };
         initProvider();
     }, [sessionConfig.provider]);
+    // ─── Load memory count on init ───
+    useEffect(() => {
+        setMemoryCount(memoryStore.getCount());
+    }, []);
     // ─── Process pipe input ───
     useEffect(() => {
         if (pipeMode && initialInput) {
             processUserInput(initialInput);
         }
     }, [pipeMode]);
+    // ─── Build effective system prompt (with memories) ───
+    const getEffectiveSystemPrompt = useCallback(() => {
+        const base = sessionConfig.systemPrompt;
+        if (!sessionConfig.memoryEnabled) {
+            return base;
+        }
+        const memoryText = memoryStore.formatForPrompt(50);
+        if (!memoryText) {
+            return base;
+        }
+        return `${memoryText}\n\n${base}`;
+    }, [sessionConfig.systemPrompt, sessionConfig.memoryEnabled]);
     // ─── Command Context ───
     const getCommandContext = useCallback(() => {
         return {
@@ -92,6 +110,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
             conversation: conversationRef.current,
             provider: provider,
             history: historyStore,
+            memory: memoryStore,
             configStore,
             appendMessage: (role, content) => {
                 const msg = {
@@ -140,6 +159,10 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
             }
             const ctx = getCommandContext();
             await command.handler(args, ctx);
+            // Refresh memory count after memory commands
+            if (cmdName === 'memory') {
+                setMemoryCount(memoryStore.getCount());
+            }
         }
         catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -167,11 +190,12 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
         setStreamContent('');
         setError(null);
         try {
-            // Build messages array with system prompt
+            // Build messages array with system prompt + memories
+            const effectiveSystemPrompt = getEffectiveSystemPrompt();
             const systemMsg = {
                 id: crypto.randomUUID(),
                 role: 'system',
-                content: sessionConfig.systemPrompt,
+                content: effectiveSystemPrompt,
                 timestamp: Date.now(),
             };
             const allMessages = [systemMsg, ...conversationRef.current.messages, userMessage];
@@ -180,10 +204,11 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
                 setIsStreaming(true);
                 let fullContent = '';
                 const stream = provider.stream(allMessages, {
+                    model: sessionConfig.model,
                     temperature: sessionConfig.temperature,
                     topP: sessionConfig.topP,
                     maxTokens: sessionConfig.maxTokens,
-                    systemPrompt: sessionConfig.systemPrompt,
+                    systemPrompt: effectiveSystemPrompt,
                 });
                 for await (const chunk of stream) {
                     fullContent += chunk.content;
@@ -211,10 +236,11 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
             else {
                 // ── Non-Streaming Mode ──
                 const response = await provider.chat(allMessages, {
+                    model: sessionConfig.model,
                     temperature: sessionConfig.temperature,
                     topP: sessionConfig.topP,
                     maxTokens: sessionConfig.maxTokens,
-                    systemPrompt: sessionConfig.systemPrompt,
+                    systemPrompt: effectiveSystemPrompt,
                 });
                 const assistantMessage = {
                     id: crypto.randomUUID(),
@@ -242,7 +268,7 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
             setIsLoading(false);
             setIsStreaming(false);
         }
-    }, [provider, sessionConfig, tokenUsage, addOutput]);
+    }, [provider, sessionConfig, tokenUsage, addOutput, getEffectiveSystemPrompt]);
     // ─── Submit Input ───
     const submitInput = useCallback(() => {
         const trimmed = input.trim();
@@ -301,6 +327,6 @@ export function Repl({ initialInput, pipeMode, profile, debugMode }) {
     const isLastMessageAssistant = conversation.messages.length > 0 &&
         conversation.messages[conversation.messages.length - 1].role === 'assistant';
     // ─── Render ───
-    return (_jsxs(Box, { flexDirection: "column", children: [_jsx(Header, { provider: sessionConfig.provider, model: sessionConfig.model, endpoint: PROVIDER_DEFAULTS[sessionConfig.provider]?.baseUrl ?? 'unknown', profile: sessionConfig.profile, connected: connected }), showMascot && _jsx(ShibaMascot, { show: showMascot }), outputLines.map((line, i) => (_jsx(Text, { children: line.text }, i))), conversation.messages.map((msg, idx) => (_jsx(MessageItem, { message: msg, isLast: idx === conversation.messages.length - 1, streaming: isStreaming && isLastMessageAssistant, streamContent: streamContent }, msg.id))), isStreaming && streamContent && !isLastMessageAssistant && (_jsxs(Box, { flexDirection: "column", marginTop: 1, children: [_jsx(Text, { children: chalk.hex('#44aaff')('[AI] ') }), _jsxs(Text, { wrap: "wrap", children: [streamContent, CURSOR] })] })), (isLoading || isStreaming) && (_jsx(Spinner, { text: isStreaming ? 'Generating response...' : 'Thinking...', active: true })), error && (_jsx(Text, { color: "red", children: error })), multilineMode && (_jsx(Text, { dimColor: true, children: chalk.dim('─── MULTILINE MODE (type END_MULTILINE to send, ESC to cancel) ───') })), _jsx(Box, { marginTop: 1, children: _jsxs(Text, { children: [multilineMode ? chalk.hex('#ffcc00')('>> ') : PROMPT_SYMBOL, input, CURSOR] }) }), _jsx(Statusbar, { tokens: tokenUsage, contextMax: contextMax, streaming: isStreaming, connected: connected }), _jsx(Text, { dimColor: true, children: "openshiba v1.0.0" })] }));
+    return (_jsxs(Box, { flexDirection: "column", children: [_jsx(Header, { provider: sessionConfig.provider, model: sessionConfig.model, endpoint: PROVIDER_DEFAULTS[sessionConfig.provider]?.baseUrl ?? 'unknown', profile: sessionConfig.profile, connected: connected }), showMascot && _jsx(ShibaMascot, { show: showMascot }), sessionConfig.memoryEnabled && memoryCount > 0 && (_jsx(Text, { dimColor: true, children: chalk.dim(`  🧠 ${memoryCount} memories loaded`) })), outputLines.map((line, i) => (_jsx(Text, { children: line.text }, i))), conversation.messages.map((msg, idx) => (_jsx(MessageItem, { message: msg, isLast: idx === conversation.messages.length - 1, streaming: isStreaming && isLastMessageAssistant, streamContent: streamContent }, msg.id))), isStreaming && streamContent && !isLastMessageAssistant && (_jsxs(Box, { flexDirection: "column", marginTop: 1, children: [_jsx(Text, { children: chalk.hex('#44aaff')('[AI] ') }), _jsxs(Text, { wrap: "wrap", children: [streamContent, CURSOR] })] })), (isLoading || isStreaming) && (_jsx(Spinner, { text: isStreaming ? 'Generating response...' : 'Thinking...', active: true })), error && (_jsx(Text, { color: "red", children: error })), multilineMode && (_jsx(Text, { dimColor: true, children: chalk.dim('─── MULTILINE MODE (type END_MULTILINE to send, ESC to cancel) ───') })), _jsx(Box, { marginTop: 1, children: _jsxs(Text, { children: [multilineMode ? chalk.hex('#ffcc00')('>> ') : PROMPT_SYMBOL, input, CURSOR] }) }), _jsx(Statusbar, { tokens: tokenUsage, contextMax: contextMax, streaming: isStreaming, connected: connected }), _jsx(Text, { dimColor: true, children: "openshiba v1.0.0" })] }));
 }
 //# sourceMappingURL=repl.js.map

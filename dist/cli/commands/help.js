@@ -3,12 +3,12 @@ const command = {
     name: 'help',
     description: 'List all available commands with descriptions',
     usage: '/help',
-    handler(_args, ctx) {
-        // We don't have direct access to allCommands here, so we use a hardcoded list
-        // The REPL layer will pass commands through or we import the registry
+    handler(_args, _ctx) {
         const commands = [
             { name: 'help', description: 'List all available commands' },
-            { name: 'model', description: 'List or switch AI models', usage: '/model [model-id|list]' },
+            { name: 'model', description: 'Quick-switch to a model by name', usage: '/model <model-id>' },
+            { name: 'models', description: 'List available models from provider (live)', usage: '/models [number]' },
+            { name: 'memory', description: 'Manage persistent memories across sessions', usage: '/memory [add|delete|search|clear|on|off|save]' },
             { name: 'provider', description: 'List or switch providers', usage: '/provider [name]' },
             { name: 'key', description: 'Show or set API key', usage: '/key [api-key]' },
             { name: 'config', description: 'Show or set configuration', usage: '/config [key=value ...]' },
@@ -29,6 +29,7 @@ const command = {
             { name: 'exit', description: 'Exit OpenShiba' },
             { name: 'attach', description: 'Attach a file as context', usage: '/attach <file-path>' },
             { name: 'diff', description: 'Compare last two responses' },
+            { name: 'list', description: 'List live models from current provider', usage: '/list' },
         ];
         console.log('');
         console.log(chalk.hex('#e8873a').bold('  🐕 Available Commands'));
@@ -44,7 +45,7 @@ const command = {
             console.log(line);
         }
         console.log('');
-        console.log(chalk.dim('  Tip: Use /model list to interactively select a model'));
+        console.log(chalk.dim('  Tip: Use /memory add <text> to save context for future sessions'));
         console.log('');
     },
 };

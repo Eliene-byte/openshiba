@@ -64,7 +64,7 @@ export class AnthropicProvider {
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
             try {
                 const response = await this.client.messages.create({
-                    model: this._resolveModel(),
+                    model: options.model ?? this._resolveModel(),
                     max_tokens: options.maxTokens ?? 4096,
                     temperature: options.temperature ?? 0.7,
                     top_p: options.topP ?? 1.0,
@@ -106,7 +106,7 @@ export class AnthropicProvider {
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
             try {
                 const stream = this.client.messages.stream({
-                    model: this._resolveModel(),
+                    model: options.model ?? this._resolveModel(),
                     max_tokens: options.maxTokens ?? 4096,
                     temperature: options.temperature ?? 0.7,
                     top_p: options.topP ?? 1.0,

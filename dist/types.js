@@ -88,6 +88,7 @@ export const DEFAULT_SESSION_CONFIG = {
     systemPrompt: 'You are a helpful AI assistant. Be concise and clear.',
     streaming: true,
     profile: 'default',
+    memoryEnabled: true,
 };
 export const DEFAULT_THEME = {
     primary: '#e8873a',

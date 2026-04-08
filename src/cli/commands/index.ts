@@ -2,6 +2,8 @@ import type { SlashCommand } from '../../types.js';
 
 import help from './help.js';
 import model from './model.js';
+import models from './models.js';
+import memory from './memory.js';
 import provider from './provider.js';
 import key from './key.js';
 import config from './config.js';
@@ -22,12 +24,15 @@ import whoami from './whoami.js';
 import exit from './exit.js';
 import attach from './attach.js';
 import diff from './diff.js';
+import list from './list.js';
 
-export { help, model, provider, key, config, system, clear, reset, history, load, save, export_, copy, tokens, stream, multiline, pipe, run, whoami, exit, attach, diff };
+export { help, model, models, memory, provider, key, config, system, clear, reset, history, load, save, export_, copy, tokens, stream, multiline, pipe, run, whoami, exit, attach, diff, list };
 
 export const allCommands: SlashCommand[] = [
   help,
   model,
+  models,
+  memory,
   provider,
   key,
   config,
@@ -48,6 +53,7 @@ export const allCommands: SlashCommand[] = [
   exit,
   attach,
   diff,
+  list,
 ];
 
 export const commandMap: Map<string, SlashCommand> = new Map(

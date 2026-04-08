@@ -40,6 +40,7 @@ export interface ModelInfo {
   name: string;
   maxTokens: number;
   contextWindow: number;
+  size?: string;
 }
 
 export interface SessionConfig {
@@ -51,6 +52,7 @@ export interface SessionConfig {
   systemPrompt: string;
   streaming: boolean;
   profile: string;
+  memoryEnabled: boolean;
 }
 
 export interface StreamChunk {
@@ -89,6 +91,7 @@ export interface CommandContext {
   conversation: Conversation;
   provider: ProviderInstance;
   history: HistoryStore;
+  memory: MemoryStore;
   configStore: ConfigStore;
   appendMessage: (role: 'user' | 'assistant', content: string) => void;
   setConfig: (partial: Partial<SessionConfig>) => void;
@@ -120,6 +123,7 @@ export interface ProviderInstance {
 }
 
 export interface ChatOptions {
+  model?: string;
   temperature?: number;
   topP?: number;
   maxTokens?: number;
@@ -139,6 +143,26 @@ export interface ConfigStore {
   setProviderConfig(name: string, config: ProviderConfig): void;
   getSessionConfig(profile?: string): SessionConfig;
   setSessionConfig(config: SessionConfig): void;
+}
+
+export interface MemoryEntry {
+  id: number;
+  content: string;
+  category: 'fact' | 'preference' | 'context' | 'instruction';
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface MemoryStore {
+  add(content: string, category?: string): number;
+  get(id: number): MemoryEntry | null;
+  getAll(limit?: number): MemoryEntry[];
+  search(query: string): MemoryEntry[];
+  delete(id: number): boolean;
+  clear(): boolean;
+  getCount(): number;
+  formatForPrompt(limit?: number): string;
+  close(): void;
 }
 
 export interface HistoryStore {
@@ -240,6 +264,7 @@ export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   systemPrompt: 'You are a helpful AI assistant. Be concise and clear.',
   streaming: true,
   profile: 'default',
+  memoryEnabled: true,
 };
 
 export const DEFAULT_THEME: ThemeConfig = {
