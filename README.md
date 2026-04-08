@@ -37,7 +37,7 @@
 
  ┌─ Status ────────────────────────────────────────┐
  ├─ Provider  ── OpenRouter
- ├─ Model     ── claude-sonnet-4
+ ├─ Model     ── Simulation
  ├─ Endpoint  ── https://openrouter.ai/api/v1
  └─ Profile   ── default
  └─ Status     ── ● Connected
